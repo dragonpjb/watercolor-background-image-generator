@@ -93,11 +93,13 @@
 				<br>
 				You can click the canvas to generate the image, and click with another side to save it.<br>
 				Currently, the width is <span id="imageWidthInformation">0</span> pixels and the height is <span id="imageHeightInformation">0</span> pixels.
+				<span id="transparencyInformation"><br><strong>The transparency will not be removed.</strong></span>
 			</p>
 		</div>
 
 		<div id="settings">
 			<button id="clear">Clear the canvas</button><br>
+			<button id="transparencyToggle">Remove the transparency</button><br>
 			<button id="chromatic">Generate new chromatic color information</button><br>
 			<button id="achromatic">Generate new achromatic color information</button><br>
 			<label for="globalAlpha">Global alpha</label><input id="globalAlpha" type="range" min="0" max="1" step="0.01" value="0.2"><br>
@@ -113,6 +115,7 @@
 			var canvasContext = canvasElement.getContext("2d");
 			var canvasImageElement = document.getElementById("canvasImage");
 			var currentColorInformation = generateColorInformation(true);
+			var removeTransparency = false;
 
 			function resizeCanvas()
 			{
@@ -125,8 +128,14 @@
 
 			document.getElementById("clear").addEventListener("click", function clearCanvas() {
 					canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
-					updateCanvasImageSizeInformation(0, 0);
 					canvasImageElement.src = null;
+					updateCanvasImageSizeInformation(0, 0);
+					document.getElementById("transparencyInformation").innerText = "";
+				}, false);
+			document.getElementById("transparencyToggle").addEventListener("click", function() {
+					removeTransparency = !removeTransparency;
+					this.innerText = (removeTransparency ? "Activate the transparency" : "Remove the transparency");
+					document.getElementById("transparencyInformation").innerHTML = ("<br>\n<strong>The transparency will" + (removeTransparency ? "" : " not") + " be removed.</strong>");
 				}, false);
 			document.getElementById("chromatic").addEventListener("click", function generateNewChromaticColorInformation() {
 					currentColorInformation = generateColorInformation();
@@ -146,6 +155,13 @@
 
 			function draw(globalAlpha, maxRadius, amount)
 			{
+				if(removeTransparency)
+				{
+					canvasContext.rect(0, 0, canvasElement.width, canvasElement.height);
+					canvasContext.fillStyle = "white";
+					canvasContext.fill();
+				}
+
 				for(var number = 0; number < amount; number++)
 				{
 					canvasContext.globalAlpha = globalAlpha;
@@ -158,6 +174,7 @@
 			{
 				canvasImageElement.src = canvasElement.toDataURL("image/png");
 				updateCanvasImageSizeInformation(canvasElement.width, canvasElement.height);
+				document.getElementById("transparencyInformation").innerHTML = ("<br>\nThe transparency is" + (removeTransparency ? "" : " not") + " removed.");
 			}
 			function updateCanvasImageSizeInformation(width, height)
 			{
