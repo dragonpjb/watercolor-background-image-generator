@@ -1,6 +1,8 @@
 # K's watercolor background image generator
 K's watercolor background image generator application using HTML5 &lt;canvas&gt;.
 
+[Open the application](https://cdn.rawgit.com/wlzla000/K-s-watercolor-background-image-generator/master/K's%20watercolor%20background%20image%20generator.HTML)
+
 ## Results
 ![](https://cloud.githubusercontent.com/assets/15066073/12224429/8137d1c0-b833-11e5-98e9-d983f3e5abc9.png)
 ![](https://cloud.githubusercontent.com/assets/15066073/12224430/813cb5dc-b833-11e5-9027-939455e3a84e.png)
