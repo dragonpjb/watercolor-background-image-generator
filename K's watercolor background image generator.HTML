@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="author" content="K.(wlzla000@naver.com)">
+		<meta name="description" content="K's watercolor background image generator application.">
+		<meta name="keywords" content="Web application, canvas, HTML, HTML5, CSS, CSS3, JavaScript">
+		<meta name="viewport" content="width=device-width">
+
+		<title>K's watercolor background image generator</title>
+
+		<style>
+			html, body
+			{
+				width: 100%;
+				height: 100%;
+				margin: 0px;
+				padding: 0px;
+				overflow: hidden;
+			}
+
+			::selection
+			{
+				background: rgba(0, 0, 0, 0.5);
+				color: white;
+			}
+			::-moz-selection
+			{
+				background: rgba(0, 0, 0, 0.5);
+				color: white;
+			}
+
+			canvas, img#canvasImage
+			{
+				display: block;
+				width: 100%;
+				height: 100%;
+			}
+			img#canvasImage
+			{
+				z-index: 2;
+			}
+
+			#information
+			{
+				position: absolute;
+				background-color: rgba(255, 255, 255, 0.5);
+				padding-right: 7px;
+
+				border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+				border-right: 1px solid rgba(0, 0, 0, 0.2);
+			}
+			h1
+			{
+				margin: 10px;
+			}
+			p
+			{
+				margin-left: 10px;
+			}
+
+			#settings
+			{
+				position: absolute;
+				bottom: 0px;
+				right: 0px;
+				background-color: rgba(0, 0, 0, 0.5);
+				color: white;
+				padding: 5px;
+				z-index: 3;
+			}
+			input[type=number]
+			{
+				width: 100px;
+				height: 20px;
+				font-size: 17px;
+				color: black;
+			}
+			label
+			{
+				margin-right: 7px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="information">
+			<h1>K's watercolor background image generator</h1>
+			<p>
+				This application is made by K.(<a href="mailto:wlzla000@naver.com">wlzla000@naver.com</a>).<br>
+				GitHub: <a href="https://github.com/wlzla000" target="_blank">K.</a>.<br>
+				Mozilla developer network: <a href="https://developer.mozilla.org/en-US/profiles/K._" target="_blank">K._</a>.<br>
+				<br>
+				You can click the canvas to generate the image, and click with another side to save it.<br>
+				Currently, the width is <span id="imageWidthInformation">0</span> pixels and the height is <span id="imageHeightInformation">0</span> pixels.
+			</p>
+		</div>
+
+		<div id="settings">
+			<button id="clear">Clear the canvas</button><br>
+			<button id="chromatic">Generate new chromatic color information</button><br>
+			<button id="achromatic">Generate new achromatic color information</button><br>
+			<label for="globalAlpha">Global alpha</label><input id="globalAlpha" type="range" min="0" max="1" step="0.01" value="0.2"><br>
+			<label for="radius">Radius</label><input id="radius" type="number" value="70"><br>
+			<label for="amount">Amount</label><input id="amount" type="number" value="7000">
+		</div>
+
+		<img id="canvasImage"></img>
+		<canvas id="canvas"></canvas>
+
+		<script>
+			var canvasElement = document.getElementById("canvas");
+			var canvasContext = canvasElement.getContext("2d");
+			var canvasImageElement = document.getElementById("canvasImage");
+			var currentColorInformation = generateColorInformation(true);
+
+			function resizeCanvas()
+			{
+				canvasElement.width = canvasImageElement.width = document.body.offsetWidth;
+				canvasElement.height = canvasImageElement.height = document.body.offsetHeight;
+			}
+			resizeCanvas();
+			window.addEventListener("resize", resizeCanvas, false);
+
+
+			document.getElementById("clear").addEventListener("click", function clearCanvas() {
+					canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+					updateCanvasImageSizeInformation(0, 0);
+					canvasImageElement.src = null;
+				}, false);
+			document.getElementById("chromatic").addEventListener("click", function generateNewChromaticColorInformation() {
+					currentColorInformation = generateColorInformation();
+				}, false);
+			document.getElementById("achromatic").addEventListener("click", function generateNewAchromaticColorInformation() {
+					currentColorInformation = generateColorInformation(true);
+				}, false);
+			canvasImageElement.addEventListener("click", function() {
+					var globalAlpha = document.getElementById("globalAlpha").value;
+					var radius = document.getElementById("radius").value;
+					var amount = document.getElementById("amount").value;
+
+					if(globalAlpha && radius && amount) draw(globalAlpha, radius, amount);
+					else
+						alert("Fill the values!");
+				}, false);
+
+			function draw(globalAlpha, maxRadius, amount)
+			{
+				for(var number = 0; number < amount; number++)
+				{
+					canvasContext.globalAlpha = globalAlpha;
+					drawCircle(currentColorInformation, Math.random(), Math.random(), Math.random() * maxRadius);
+				}
+
+				updateCanvasImageToFilize();
+			}
+			function updateCanvasImageToFilize()
+			{
+				canvasImageElement.src = canvasElement.toDataURL("image/png");
+				updateCanvasImageSizeInformation(canvasElement.width, canvasElement.height);
+			}
+			function updateCanvasImageSizeInformation(width, height)
+			{
+				document.getElementById("imageWidthInformation").innerText = width;
+				document.getElementById("imageHeightInformation").innerText = height;
+			}
+
+			function generateColorInformation(black)
+			{
+				if(black)
+				{
+					var brightness = Math.round(Math.random() * 255);
+					colorInformation = {raw: true, R: brightness, G: brightness, B: brightness};
+				}
+				else
+				{
+					var colorInformation = {};
+					var colors = ['R', 'G', 'B'];
+					var fixedColorIndex = Math.floor(Math.random() * 3);
+					colorInformation[colors[fixedColorIndex]] = "fixed";
+					colors.splice(fixedColorIndex, 1);
+
+					var randomBinaryValue = Math.round(Math.random());
+					colorInformation[colors[randomBinaryValue]] = Math.round(Math.random()) ? "HF"/* left-to-right */ : "HR"/* right-to-left */;
+					colorInformation[colors[+!randomBinaryValue]] = Math.round(Math.random()) ? "VF"/* top-to-bottom */ : "VR"/* bottom-to-top */;
+
+				}
+
+				return colorInformation;
+			}
+
+			function drawCircle(colorInformation, horizontalRate, verticalRate, radius)
+			{
+				canvasContext.beginPath();
+				canvasContext.fillStyle = generateCSSRGBString(calculateRGBValues(colorInformation, horizontalRate, verticalRate));
+				canvasContext.arc(canvasElement.width * horizontalRate, canvasElement.height * verticalRate, radius, 0, 2 * Math.PI, false);
+				canvasContext.fill();
+				canvasContext.closePath();
+			}
+
+			function generateCSSRGBString(RGBValues)
+			{
+				return "rgb(" + RGBValues.R + ", " + RGBValues.G + ", " + RGBValues.B + ")";
+			}
+
+			function calculateRGBValues(colorInformation, horizontalRate, verticalRate)
+			{
+				if(colorInformation.raw) return colorInformation;
+
+				var colorValues = {HF: getColorValue(horizontalRate), VF: getColorValue(verticalRate), HR: getColorValue(1 - horizontalRate), VR: getColorValue(1 - verticalRate)};
+
+				var resultRGBValue = {};
+				resultRGBValue.R = (colorInformation.R === "fixed" ? 255 : colorValues[colorInformation.R]);
+				resultRGBValue.G = (colorInformation.G === "fixed" ? 255 : colorValues[colorInformation.G]);
+				resultRGBValue.B = (colorInformation.B === "fixed" ? 255 : colorValues[colorInformation.B]);
+
+				return resultRGBValue;
+			}
+
+			function getColorValue(rate)
+			{
+				return Math.round(255 * rate);
+			}
+		</script>
+	</body>
+</html>
